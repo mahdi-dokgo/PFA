@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Rejeter {{ facture.reference }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">Rejeter la facture</h1>
+        <span class="text-muted">{{ facture.reference }} — {{ facture.fournisseur.name }}</span>
+    </div>
+    <a href="{% url 'webapp:facture_detail' facture.pk %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white fw-semibold">
+                <i class="bi bi-x-circle me-1"></i> Confirmation du rejet
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning mb-3">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Vous êtes sur le point de rejeter la facture <strong>{{ facture.reference }}</strong>
+                    d'un montant TTC de <strong>{{ facture.montant_ttc|floatformat:2 }} DH</strong>.
+                </div>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ form.commentaire.id_for_label }}">
+                            {{ form.commentaire.label }}
+                        </label>
+                        {{ form.commentaire }}
+                        {% if form.commentaire.errors %}
+                        <div class="text-danger small mt-1">{{ form.commentaire.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle me-1"></i> Confirmer le rejet
+                        </button>
+                        <a href="{% url 'webapp:facture_detail' facture.pk %}"
+                           class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Modifier fournisseur{% else %}Nouveau fournisseur{% endif %}{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">{% if object %}Modifier le fournisseur{% else %}Nouveau fournisseur{% endif %}</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ form.contact_name.label }}</label>
+            {{ form.contact_name }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ form.phone.label }}</label>
+            {{ form.phone }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ form.specialty.label }}</label>
+            {{ form.specialty }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label class="form-label">{{ form.avg_lead_time_days.label }}</label>
+            {{ form.avg_lead_time_days }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label class="form-label">{{ form.status.label }}</label>
+            {{ form.status }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">{{ form.notes.label }}</label>
+        {{ form.notes }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="{% url 'webapp:supplier_list' %}" class="btn btn-outline-secondary">Annuler</a>
+</form>
+{% endblock %}

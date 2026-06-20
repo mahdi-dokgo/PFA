@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load webapp_extras %}
+
+{% block title %}Nouvelle réception{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">Nouvelle réception</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label">{{ po_select_form.po.label }}</label>
+                {{ po_select_form.po }}
+                {% if po_select_form.po.errors %}<div class="text-danger small">{{ po_select_form.po.errors }}</div>{% endif %}
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">Charger les lignes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if po %}
+<div class="mb-3">
+    <p class="mb-1"><strong>Bon de commande :</strong> {{ po.code }}</p>
+    <p class="mb-1"><strong>Fournisseur :</strong> {{ po.supplier.name }}</p>
+    <p class="mb-1"><strong>Statut :</strong> <span class="badge bg-{{ po.status|status_badge }}">{{ po.get_status_display }}</span></p>
+</div>
+
+{% if lines_with_forms %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="po" value="{{ po.pk }}">
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}
+        <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+    {% endif %}
+
+    <div class="table-responsive mb-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th>Commandé</th>
+                    <th>Déjà reçu</th>
+                    <th>Restant</th>
+                    <th style="width: 140px;">Quantité reçue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for po_line, remaining, line_form in lines_with_forms %}
+                <tr>
+                    <td>{{ po_line.article.reference }} – {{ po_line.article.name }}</td>
+                    <td>{{ po_line.quantity }} {{ po_line.article.unit }}</td>
+                    <td>{{ po_line.received_quantity }} {{ po_line.article.unit }}</td>
+                    <td>{{ remaining }} {{ po_line.article.unit }}</td>
+                    <td>
+                        {{ line_form.po_line_id }}
+                        {{ line_form.remaining_quantity }}
+                        {{ line_form.received_quantity }}
+                        {% if line_form.non_field_errors %}<div class="text-danger small">{{ line_form.non_field_errors }}</div>{% endif %}
+                        {% if line_form.received_quantity.errors %}<div class="text-danger small">{{ line_form.received_quantity.errors }}</div>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mb-4 col-md-6">
+        <label class="form-label">{{ notes_form.notes.label }}</label>
+        {{ notes_form.notes }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Enregistrer la réception</button>
+    <a href="{% url 'webapp:reception_list' %}" class="btn btn-outline-secondary">Annuler</a>
+</form>
+{% else %}
+<p class="text-muted">Toutes les lignes de ce bon de commande ont déjà été reçues.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

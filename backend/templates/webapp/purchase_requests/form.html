@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Nouvelle demande d'achat{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">Nouvelle demande d'achat</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <label class="form-label">{{ form.priority.label }}</label>
+            {{ form.priority }}
+        </div>
+    </div>
+
+    <h5>Lignes de la demande</h5>
+    <p class="text-muted small">Renseignez au moins une ligne (article, quantité, justification).</p>
+
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}
+        <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+    {% endif %}
+
+    <div class="table-responsive mb-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th style="width: 140px;">Quantité</th>
+                    <th>Justification</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line_form in formset %}
+                <tr>
+                    <td>
+                        {{ line_form.id }}
+                        {{ line_form.article }}
+                        {% if line_form.article.errors %}<div class="text-danger small">{{ line_form.article.errors }}</div>{% endif %}
+                    </td>
+                    <td>
+                        {{ line_form.quantity }}
+                        {% if line_form.quantity.errors %}<div class="text-danger small">{{ line_form.quantity.errors }}</div>{% endif %}
+                    </td>
+                    <td>
+                        {{ line_form.justification }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Créer la demande</button>
+    <a href="{% url 'webapp:request_list' %}" class="btn btn-outline-secondary">Annuler</a>
+</form>
+{% endblock %}

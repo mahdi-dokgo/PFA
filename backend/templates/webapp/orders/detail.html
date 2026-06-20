@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load webapp_extras %}
+
+{% block title %}{{ order.code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ order.code }}</h1>
+        <span class="badge bg-{{ order.status|status_badge }}">{{ order.get_status_display }}</span>
+        {% if order.request %}
+        <span class="badge bg-light text-dark border">Issu de la demande : {{ order.request.code }}</span>
+        {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        {% if user.role == 'ADMIN' or user.role == 'ACHETEUR' or user.role == 'DIRECTION' %}
+        <a href="{% url 'webapp:export_bc_detail_pdf' order.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-printer"></i> Imprimer BC
+        </a>
+        {% endif %}
+        <a href="{% url 'webapp:po_list' %}" class="btn btn-outline-secondary">Retour à la liste</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <p class="mb-1"><strong>Fournisseur :</strong> {{ order.supplier.name }}</p>
+        <p class="mb-1"><strong>Date de livraison prévue :</strong> {{ order.expected_date|date:"d/m/Y" }}</p>
+        <p class="mb-1"><strong>Créé le :</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+        <p class="mb-1"><strong>Montant total :</strong> {{ order.total_amount }}</p>
+    </div>
+</div>
+
+<h5>Lignes</h5>
+<div class="table-responsive mb-4">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Article</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Sous-total</th>
+                <th>Quantité reçue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in order.lines.all %}
+            <tr>
+                <td>{{ line.article.reference }} – {{ line.article.name }}</td>
+                <td>{{ line.quantity }} {{ line.article.unit }}</td>
+                <td>{{ line.unit_price }}</td>
+                <td>{{ line.quantity|multiply:line.unit_price }}</td>
+                <td>{{ line.received_quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3" class="text-end">Total</th>
+                <th>{{ order.total_amount }}</th>
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+{% if order.status == 'APPROUVEE' or order.status == 'ENVOYEE' or order.status == 'PARTIELLEMENT_RECUE' %}
+    {% if user.role == 'ADMIN' or user.role == 'MAGASINIER' %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Action</h5>
+            <a href="{% url 'webapp:reception_create' %}?po={{ order.pk }}" class="btn btn-primary">
+                Réceptionner
+            </a>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+{% if user.role == 'ADMIN' or user.role == 'ACHETEUR' or user.role == 'VALIDATEUR' %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Changer le statut</h5>
+        <form method="post" action="{% url 'webapp:po_transition' order.pk %}" class="row g-2 align-items-end">
+            {% csrf_token %}
+            <div class="col-auto">
+                <label class="form-label">{{ transition_form.status.label }}</label>
+                {{ transition_form.status }}
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load webapp_extras %}
+
+{% block title %}{{ reception.code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ reception.code }}</h1>
+        <span class="badge bg-light text-dark border">Bon de commande : {{ reception.po.code }}</span>
+    </div>
+    <a href="{% url 'webapp:reception_list' %}" class="btn btn-outline-secondary">Retour à la liste</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <p class="mb-1"><strong>Réceptionné par :</strong> {{ reception.receiver_name }}</p>
+        <p class="mb-1"><strong>Date :</strong> {{ reception.received_at|date:"d/m/Y H:i" }}</p>
+        <p class="mb-1"><strong>Bon de commande :</strong> <a href="{% url 'webapp:po_detail' reception.po.pk %}">{{ reception.po.code }}</a></p>
+        {% if reception.notes %}
+            <p class="mb-1"><strong>Notes :</strong> {{ reception.notes }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<h5>Lignes reçues</h5>
+<div class="table-responsive mb-4">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Article</th>
+                <th>Quantité commandée (BC)</th>
+                <th>Quantité reçue</th>
+                <th>Écart</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in reception.lines.all %}
+            <tr {% if line.gap > 0 %}class="table-warning"{% endif %}>
+                <td>{{ line.article.reference }} – {{ line.article.name }}</td>
+                <td>{{ line.ordered_quantity }} {{ line.article.unit }}</td>
+                <td>{{ line.received_quantity }} {{ line.article.unit }}</td>
+                <td>
+                    {% if line.gap > 0 %}
+                        <span class="text-warning-emphasis"><i class="bi bi-exclamation-triangle"></i> Manque {{ line.gap }} {{ line.article.unit }}</span>
+                    {% else %}
+                        <span class="text-success">Conforme</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nouvelle facture{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Nouvelle facture fournisseur</h1>
+    <a href="{% url 'webapp:facture_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+{{ bc_amounts_json|json_script:"bc-amounts-data" }}
+
+<form method="post" novalidate id="facture-form">
+    {% csrf_token %}
+
+    <div class="row g-4 mb-4">
+        {# ── Left column: Facture info ── #}
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-receipt me-1"></i> Informations générales
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ form.fournisseur.id_for_label }}">{{ form.fournisseur.label }}</label>
+                        {{ form.fournisseur }}
+                        {% if form.fournisseur.errors %}<div class="text-danger small mt-1">{{ form.fournisseur.errors|join:", " }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ form.bon_commande.id_for_label }}">{{ form.bon_commande.label }}</label>
+                        {{ form.bon_commande }}
+                        {% if form.bon_commande.errors %}<div class="text-danger small mt-1">{{ form.bon_commande.errors|join:", " }}</div>{% endif %}
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.date_facture.id_for_label }}">{{ form.date_facture.label }}</label>
+                            {{ form.date_facture }}
+                            {% if form.date_facture.errors %}<div class="text-danger small mt-1">{{ form.date_facture.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.date_echeance.id_for_label }}">{{ form.date_echeance.label }}</label>
+                            {{ form.date_echeance }}
+                            {% if form.date_echeance.errors %}<div class="text-danger small mt-1">{{ form.date_echeance.errors|join:", " }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-0">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.montant_ht.id_for_label }}">{{ form.montant_ht.label }}</label>
+                            {{ form.montant_ht }}
+                            {% if form.montant_ht.errors %}<div class="text-danger small mt-1">{{ form.montant_ht.errors|join:", " }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.montant_ttc.id_for_label }}">{{ form.montant_ttc.label }}</label>
+                            {{ form.montant_ttc }}
+                            {% if form.montant_ttc.errors %}<div class="text-danger small mt-1">{{ form.montant_ttc.errors|join:", " }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-0 mt-3">
+                        <label class="form-label fw-semibold" for="{{ form.commentaire.id_for_label }}">{{ form.commentaire.label }}</label>
+                        {{ form.commentaire }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ── Right column: BC preview ── #}
+        <div class="col-lg-5">
+            <div class="card" id="bc-preview-card" style="display:none;">
+                <div class="card-header fw-semibold text-muted small">
+                    <i class="bi bi-cart-check me-1"></i> Aperçu du bon de commande
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="text-muted small">Montant BC</span>
+                        <div class="fw-bold fs-5" id="bc-montant-preview">—</div>
+                    </div>
+                    <div id="ecart-alert" class="alert alert-warning small mb-0" style="display:none;"></div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-calculator me-1"></i> Total lignes
+                </div>
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Montant calculé à partir des lignes</div>
+                    <div class="fw-bold fs-5 text-primary" id="total-lignes">0,00 DH</div>
+                    <div class="text-muted small mt-2">Vérifiez que ce total correspond au montant TTC saisi.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Lignes formset ── #}
+    <div class="card mb-4">
+        <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-list-ul me-1"></i> Lignes de facture</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="add-ligne">
+                <i class="bi bi-plus-lg me-1"></i> Ajouter une ligne
+            </button>
+        </div>
+        <div class="card-body p-0">
+            {{ formset.management_form }}
+            {% if formset.non_form_errors %}
+            <div class="alert alert-danger mx-3 mt-3">{{ formset.non_form_errors }}</div>
+            {% endif %}
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="min-width:260px;">Désignation</th>
+                            <th style="width:90px;">Qté</th>
+                            <th style="width:140px;">Prix unitaire (DH)</th>
+                            <th style="width:130px;" class="text-end">Montant</th>
+                            <th style="width:50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lignes-tbody">
+                        {% for ligne_form in formset %}
+                        <tr class="ligne-row">
+                            <td>
+                                {% for hidden in ligne_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                {{ ligne_form.designation }}
+                                {% if ligne_form.designation.errors %}
+                                <div class="text-danger small">{{ ligne_form.designation.errors|join:", " }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ ligne_form.quantite }}
+                                {% if ligne_form.quantite.errors %}
+                                <div class="text-danger small">{{ ligne_form.quantite.errors|join:", " }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ ligne_form.prix_unitaire }}
+                                {% if ligne_form.prix_unitaire.errors %}
+                                <div class="text-danger small">{{ ligne_form.prix_unitaire.errors|join:", " }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-semibold ligne-montant text-muted">—</td>
+                            <td class="text-center">
+                                {% if ligne_form.DELETE %}
+                                <div style="display:none;">{{ ligne_form.DELETE }}</div>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-ligne"
+                                        title="Supprimer cette ligne">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {# ── Empty form template for JS cloning ── #}
+    <template id="ligne-empty-template">
+        <tr class="ligne-row">
+            <td>
+                {% for hidden in formset.empty_form.hidden_fields %}
+                <input type="hidden" name="{{ hidden.html_name }}" value="{{ hidden.value|default:'' }}">
+                {% endfor %}
+                <input type="text" name="{{ formset.empty_form.designation.html_name }}"
+                       class="form-control" placeholder="Désignation de l'article">
+            </td>
+            <td>
+                <input type="number" name="{{ formset.empty_form.quantite.html_name }}"
+                       class="form-control ligne-qte" min="1" placeholder="Qté">
+            </td>
+            <td>
+                <input type="number" name="{{ formset.empty_form.prix_unitaire.html_name }}"
+                       class="form-control ligne-prix" step="0.01" min="0" placeholder="0.00">
+            </td>
+            <td class="text-end fw-semibold ligne-montant text-muted">—</td>
+            <td class="text-center">
+                <input type="checkbox" name="{{ formset.empty_form.DELETE.html_name }}" style="display:none;">
+                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-ligne" title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+    </template>
+
+    <div class="mt-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i> Enregistrer la facture
+        </button>
+        <a href="{% url 'webapp:facture_list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    'use strict';
+
+    // ── BC amounts data ──
+    const bcAmounts = JSON.parse(document.getElementById('bc-amounts-data').textContent);
+
+    // ── Running total ──
+    function calcRowTotal(row) {
+        const qte  = parseFloat(row.querySelector('.ligne-qte')?.value) || 0;
+        const prix = parseFloat(row.querySelector('.ligne-prix')?.value) || 0;
+        const total = qte * prix;
+        const el = row.querySelector('.ligne-montant');
+        if (el) el.textContent = total > 0 ? total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' DH' : '—';
+        return total;
+    }
+
+    function updateGrandTotal() {
+        let grand = 0;
+        document.querySelectorAll('#lignes-tbody .ligne-row').forEach(row => {
+            const deleteBox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+            if (!deleteBox || !deleteBox.checked) {
+                grand += calcRowTotal(row);
+            }
+        });
+        document.getElementById('total-lignes').textContent =
+            grand.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' DH';
+        checkEcart();
+    }
+
+    // ── BC preview & écart ──
+    function checkEcart() {
+        const bcSel  = document.getElementById('id_bon_commande');
+        const bcId   = bcSel ? bcSel.value : '';
+        const ttcEl  = document.getElementById('id_montant_ttc');
+        const ttc    = parseFloat(ttcEl ? ttcEl.value : 0) || 0;
+        const alertEl = document.getElementById('ecart-alert');
+        const previewCard = document.getElementById('bc-preview-card');
+
+        if (bcId && bcAmounts[bcId] !== undefined) {
+            const bcAmt = bcAmounts[bcId];
+            document.getElementById('bc-montant-preview').textContent =
+                bcAmt.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' DH';
+            previewCard.style.display = 'block';
+
+            if (ttc > 0) {
+                const diff    = Math.abs(ttc - bcAmt);
+                const diffPct = bcAmt > 0 ? diff / bcAmt * 100 : 0;
+                if (diffPct > 1) {
+                    alertEl.textContent =
+                        '⚠️ Écart détecté : BC = ' + bcAmt.toFixed(2) + ' DH / Facture TTC = ' +
+                        ttc.toFixed(2) + ' DH (différence : ' + diff.toFixed(2) + ' DH)';
+                    alertEl.style.display = 'block';
+                } else {
+                    alertEl.style.display = 'none';
+                }
+            } else {
+                alertEl.style.display = 'none';
+            }
+        } else {
+            previewCard.style.display = 'none';
+            alertEl.style.display = 'none';
+        }
+    }
+
+    // ── Bind events on existing rows ──
+    function bindRow(row) {
+        row.querySelectorAll('.ligne-qte, .ligne-prix').forEach(el => {
+            el.addEventListener('input', updateGrandTotal);
+        });
+        const rmBtn = row.querySelector('.btn-remove-ligne');
+        if (rmBtn) {
+            rmBtn.addEventListener('click', function () {
+                const deleteBox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+                if (deleteBox) {
+                    deleteBox.checked = true;
+                    row.style.opacity = '0.35';
+                    rmBtn.disabled = true;
+                } else {
+                    row.remove();
+                }
+                updateGrandTotal();
+            });
+        }
+    }
+
+    document.querySelectorAll('#lignes-tbody .ligne-row').forEach(bindRow);
+
+    // ── Add ligne ──
+    document.getElementById('add-ligne').addEventListener('click', function () {
+        const totalForms = document.querySelector('[name="lignes-TOTAL_FORMS"]');
+        const idx = parseInt(totalForms.value);
+        const template = document.getElementById('ligne-empty-template');
+        const clone = template.content.cloneNode(true);
+
+        clone.querySelectorAll('[name]').forEach(el => {
+            el.name = el.name.replace('__prefix__', idx);
+        });
+        clone.querySelectorAll('[id]').forEach(el => {
+            el.id = el.id.replace('__prefix__', idx);
+        });
+
+        const tbody = document.getElementById('lignes-tbody');
+        tbody.appendChild(clone);
+        totalForms.value = idx + 1;
+
+        // Bind new row
+        bindRow(tbody.lastElementChild);
+        updateGrandTotal();
+    });
+
+    // ── BC & TTC listeners ──
+    const bcSel  = document.getElementById('id_bon_commande');
+    const ttcEl  = document.getElementById('id_montant_ttc');
+    if (bcSel)  bcSel.addEventListener('change', checkEcart);
+    if (ttcEl)  ttcEl.addEventListener('input',  checkEcart);
+
+    // Initial calculation
+    updateGrandTotal();
+    checkEcart();
+})();
+</script>
+{% endblock %}

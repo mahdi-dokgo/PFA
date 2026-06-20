@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Nouveau bon de commande{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">Nouveau bon de commande</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <label class="form-label">{{ form.supplier.label }}</label>
+            {{ form.supplier }}
+            {% if form.supplier.errors %}<div class="text-danger small">{{ form.supplier.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">{{ form.request.label }}</label>
+            {{ form.request }}
+            {% if form.request.errors %}<div class="text-danger small">{{ form.request.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">{{ form.expected_date.label }}</label>
+            {{ form.expected_date }}
+            {% if form.expected_date.errors %}<div class="text-danger small">{{ form.expected_date.errors }}</div>{% endif %}
+        </div>
+    </div>
+
+    <h5>Lignes du bon de commande</h5>
+    <p class="text-muted small">Renseignez au moins une ligne (article, quantité, prix unitaire).</p>
+
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}
+        <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+    {% endif %}
+
+    <div class="table-responsive mb-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th style="width: 140px;">Quantité</th>
+                    <th style="width: 160px;">Prix unitaire</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line_form in formset %}
+                <tr>
+                    <td>
+                        {{ line_form.id }}
+                        {{ line_form.article }}
+                        {% if line_form.article.errors %}<div class="text-danger small">{{ line_form.article.errors }}</div>{% endif %}
+                    </td>
+                    <td>
+                        {{ line_form.quantity }}
+                        {% if line_form.quantity.errors %}<div class="text-danger small">{{ line_form.quantity.errors }}</div>{% endif %}
+                    </td>
+                    <td>
+                        {{ line_form.unit_price }}
+                        {% if line_form.unit_price.errors %}<div class="text-danger small">{{ line_form.unit_price.errors }}</div>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Créer le bon de commande</button>
+    <a href="{% url 'webapp:po_list' %}" class="btn btn-outline-secondary">Annuler</a>
+</form>
+{% endblock %}

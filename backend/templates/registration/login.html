@@ -1,0 +1,421 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion — ApprovWise</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'webapp/css/custom.css' %}?v=1">
+  <style>
+    html, body { height: 100%; margin: 0; background: #ffffff; }
+
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ---- Left panel ---- */
+    .login-left {
+      flex: 0 0 50%;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 48px 56px;
+      background: radial-gradient(ellipse at 30% 50%, #1a2a4a 0%, #0f1829 70%, #0a0f1a 100%);
+    }
+
+    /* Blue ambient glow behind the network */
+    .login-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(59,130,246,0.15) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Small icon badge above brand name */
+    .login-icon-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background-color: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      flex-shrink: 0;
+    }
+    .login-icon-badge svg {
+      width: 24px;
+      height: 24px;
+      fill: #ffffff;
+    }
+
+    .login-brand {
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    .login-tagline {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 18px;
+      line-height: 1.65;
+      max-width: 300px;
+      margin-top: 0.5rem;
+      margin-bottom: 0;
+    }
+
+    .login-features {
+      list-style: none;
+      padding: 0;
+      margin: 40px 0 0;
+    }
+    .login-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 17px;
+      line-height: 1.5;
+    }
+    /* bullet squares now rendered as explicit HTML spans with inline styles */
+
+    /* Soft dark fog behind the left panel text area */
+    .login-left-content::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at 20% 50%, rgba(10,15,26,0.5) 0%, transparent 70%);
+      filter: blur(40px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* ---- Floating particle dots ---- */
+    @keyframes float {
+      from { transform: translateY(-20px); }
+      to   { transform: translateY(20px);  }
+    }
+
+    .login-particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(100,180,255,0.4);
+      pointer-events: none;
+      z-index: 0;
+      animation: float 5s ease-in-out infinite alternate;
+    }
+
+    /* Make room for the lock icon inside inputs */
+    .login-card .form-control { padding-right: 36px; }
+
+    /* ---- Right panel ---- */
+    .login-right {
+      flex: 0 0 50%;
+      min-height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background-color: #ffffff;
+    }
+
+    .login-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 40px 36px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .login-demo {
+      max-width: 420px;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .login-footer {
+      position: absolute;
+      bottom: 24px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--bw-muted);
+      letter-spacing: 0.01em;
+    }
+
+    /* ---- Demo accounts divider ---- */
+    .demo-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--bw-muted);
+    }
+    .demo-divider::before,
+    .demo-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background-color: var(--bw-border);
+    }
+
+    /* ---- Mobile: compact 80 px header bar ---- */
+    @media (max-width: 767.98px) {
+      .login-wrap { flex-direction: column; }
+
+      .login-left {
+        flex: 0 0 80px;
+        min-height: 80px;
+        padding: 0 1.5rem;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.75rem;
+      }
+
+      /* hide everything except badge + brand on mobile */
+      .login-tagline,
+      .login-features { display: none; }
+
+      .login-icon-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        margin-bottom: 0;
+      }
+      .login-icon-badge svg { width: 18px; height: 18px; }
+
+      .login-brand { font-size: 1.25rem; }
+
+      .login-right {
+        flex: 1;
+        min-height: unset;
+        padding: 2rem 1rem 4rem;
+        justify-content: flex-start;
+      }
+      .login-card {
+        padding: 28px 20px;
+      }
+
+      .login-footer { bottom: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+
+  <!-- ====== LEFT: branding ====== -->
+  <div class="login-left">
+
+    <!-- Procurement network + bokeh illustration -->
+    <svg width="80%" height="80%"
+         viewBox="0 0 340 340"
+         xmlns="http://www.w3.org/2000/svg"
+         aria-hidden="true"
+         style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.7;pointer-events:none;z-index:0;">
+      <defs>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Bokeh light dots scattered across panel -->
+      <circle cx="22"  cy="42"  r="4" fill="rgba(100,180,255,0.30)" filter="url(#glow)"/>
+      <circle cx="318" cy="52"  r="6" fill="rgba(100,180,255,0.25)" filter="url(#glow)"/>
+      <circle cx="8"   cy="188" r="5" fill="rgba(100,180,255,0.20)"/>
+      <circle cx="332" cy="168" r="3" fill="rgba(100,180,255,0.30)" filter="url(#glow)"/>
+      <circle cx="198" cy="8"   r="7" fill="rgba(100,180,255,0.20)" filter="url(#glow)"/>
+      <circle cx="72"  cy="322" r="5" fill="rgba(100,180,255,0.25)"/>
+      <circle cx="328" cy="322" r="4" fill="rgba(100,180,255,0.30)" filter="url(#glow)"/>
+      <circle cx="158" cy="336" r="6" fill="rgba(100,180,255,0.15)"/>
+      <circle cx="336" cy="248" r="3" fill="rgba(100,180,255,0.30)" filter="url(#glow)"/>
+      <circle cx="4"   cy="252" r="8" fill="rgba(100,180,255,0.10)"/>
+
+      <!-- Connection lines — mesh pattern -->
+      <line x1="170" y1="165" x2="75"  y2="80"  stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="170" y1="165" x2="275" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="170" y1="165" x2="55"  y2="200" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="170" y1="165" x2="155" y2="55"  stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="170" y1="165" x2="265" y2="90"  stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="170" y1="165" x2="295" y2="185" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="170" y1="165" x2="115" y2="285" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="170" y1="165" x2="230" y2="295" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="75"  y1="80"  x2="55"  y2="200" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="75"  y1="80"  x2="155" y2="55"  stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="75"  y1="80"  x2="25"  y2="130" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="155" y1="55"  x2="265" y2="90"  stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="155" y1="55"  x2="205" y2="25"  stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="265" y1="90"  x2="295" y2="185" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="265" y1="90"  x2="320" y2="125" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="295" y1="185" x2="275" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="55"  y1="200" x2="115" y2="285" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="55"  y1="200" x2="35"  y2="305" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="115" y1="285" x2="230" y2="295" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="115" y1="285" x2="275" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="230" y1="295" x2="275" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+      <line x1="230" y1="295" x2="320" y2="310" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+
+      <!-- Small dots (r=4) -->
+      <circle cx="25"  cy="130" r="4" fill="rgba(255,255,255,0.5)"/>
+      <circle cx="205" cy="25"  r="4" fill="rgba(255,255,255,0.5)"/>
+      <circle cx="320" cy="125" r="4" fill="rgba(255,255,255,0.5)"/>
+      <circle cx="35"  cy="305" r="4" fill="rgba(255,255,255,0.5)"/>
+      <circle cx="320" cy="310" r="4" fill="rgba(255,255,255,0.5)"/>
+
+      <!-- Medium nodes (r=8) -->
+      <circle cx="55"  cy="200" r="8" fill="white"/>
+      <circle cx="155" cy="55"  r="8" fill="white"/>
+      <circle cx="265" cy="90"  r="8" fill="white"/>
+      <circle cx="295" cy="185" r="8" fill="white"/>
+      <circle cx="115" cy="285" r="8" fill="white"/>
+      <circle cx="230" cy="295" r="8" fill="white"/>
+
+      <!-- Hub nodes (r=14, glowing) -->
+      <circle cx="170" cy="165" r="14" fill="rgba(100,200,255,0.9)" filter="url(#glow)"/>
+      <circle cx="75"  cy="80"  r="14" fill="rgba(100,200,255,0.9)" filter="url(#glow)"/>
+      <circle cx="275" cy="260" r="14" fill="rgba(100,200,255,0.9)" filter="url(#glow)"/>
+    </svg>
+
+    <!-- Floating particle dots (CSS animation, no JS) -->
+    <span class="login-particle" style="top:12%;  left:18%; animation-duration:3s; animation-delay:0s;"></span>
+    <span class="login-particle" style="top:30%;  left:78%; animation-duration:5s; animation-delay:1s;"></span>
+    <span class="login-particle" style="top:58%;  left:25%; animation-duration:7s; animation-delay:0.5s;"></span>
+    <span class="login-particle" style="top:72%;  left:68%; animation-duration:4s; animation-delay:2s;"></span>
+    <span class="login-particle" style="top:88%;  left:12%; animation-duration:6s; animation-delay:1.5s;"></span>
+
+    <!-- Content block — single flex child so justify-content: center works cleanly -->
+    <div class="login-left-content" style="position: relative; z-index: 1;">
+
+      <!-- Icon badge -->
+      <div class="login-icon-badge" aria-hidden="true"
+           style="width: 48px !important; height: 48px !important; border-radius: 14px !important;">
+        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
+             style="width: 22px !important; height: 22px !important; fill: white;">
+          <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5 8.186 1.113zM15 4.239l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+        </svg>
+      </div>
+
+      <!-- Brand name -->
+      <span class="login-brand d-block"
+            style="font-size: 32px !important; font-weight: 700 !important; margin-top: 16px; text-shadow: 0 2px 20px rgba(0,0,0,0.5);">ApprovWise</span>
+
+      <!-- Tagline -->
+      <p class="login-tagline"
+         style="font-size: 16px !important; line-height: 1.4 !important; margin-top: 8px; text-shadow: 0 2px 12px rgba(0,0,0,0.4);">Plateforme de gestion des achats et approvisionnements</p>
+
+      <!-- Feature list -->
+      <ul class="login-features" style="margin-top: 48px !important;">
+        <li style="margin-bottom: 28px !important;">
+          <span style="display: block; width: 22px !important; height: 22px !important; min-width: 22px; border-radius: 8px !important; background-color: #3b82f6; flex-shrink: 0; margin-top: 2px;"></span>
+          <span style="font-size: 16px !important; text-shadow: 0 2px 12px rgba(0,0,0,0.4);">Demandes d'achat &amp; validation</span>
+        </li>
+        <li style="margin-bottom: 28px !important;">
+          <span style="display: block; width: 22px !important; height: 22px !important; min-width: 22px; border-radius: 8px !important; background-color: #3b82f6; flex-shrink: 0; margin-top: 2px;"></span>
+          <span style="font-size: 16px !important; text-shadow: 0 2px 12px rgba(0,0,0,0.4);">Bons de commande fournisseurs</span>
+        </li>
+        <li style="margin-bottom: 28px !important;">
+          <span style="display: block; width: 22px !important; height: 22px !important; min-width: 22px; border-radius: 8px !important; background-color: #3b82f6; flex-shrink: 0; margin-top: 2px;"></span>
+          <span style="font-size: 16px !important; text-shadow: 0 2px 12px rgba(0,0,0,0.4);">Réceptions &amp; gestion du stock</span>
+        </li>
+        <li style="margin-bottom: 0;">
+          <span style="display: block; width: 22px !important; height: 22px !important; min-width: 22px; border-radius: 8px !important; background-color: #3b82f6; flex-shrink: 0; margin-top: 2px;"></span>
+          <span style="font-size: 16px !important; text-shadow: 0 2px 12px rgba(0,0,0,0.4);">Tableau de bord &amp; KPIs</span>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ====== RIGHT: form ====== -->
+  <div class="login-right">
+
+    <!-- White card -->
+    <div class="login-card">
+      <h2 class="mb-1">Connexion</h2>
+      <p class="mb-4" style="color: var(--bw-muted); font-size: 0.9375rem;">
+        Entrez vos identifiants pour accéder à la plateforme.
+      </p>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger mb-4" role="alert">
+          {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
+          <div style="position: relative;">
+            {{ form.username }}
+          </div>
+          {% if form.username.errors %}
+            <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+        <div class="mb-4">
+          <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+          <div style="position: relative;">
+            {{ form.password }}
+            <i class="bi bi-lock" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;pointer-events:none;"></i>
+          </div>
+          {% if form.password.errors %}
+            <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+          {% endif %}
+        </div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit" class="btn btn-primary w-100 py-2">Se connecter</button>
+      </form>
+    </div>
+
+    {% if debug %}
+    <div class="login-demo">
+      <div class="demo-divider">Comptes de démo</div>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold">Admin</span>
+        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fw-semibold">Demandeur</span>
+        <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold">Validateur</span>
+        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-semibold">Acheteur</span>
+        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle fw-semibold">Magasinier</span>
+      </div>
+      <p class="mt-2 mb-0" style="font-size: 0.8125rem; color: var(--bw-muted);">
+        mot de passe : <code>demo1234</code>
+      </p>
+    </div>
+    {% endif %}
+
+    <footer class="login-footer">© 2026 ApprovWise · EMSI Rabat</footer>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% load webapp_extras %}
+
+{% block title %}{{ facture.reference }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">{{ facture.reference }}</h1>
+        <span class="text-muted">{{ facture.fournisseur.name }}</span>
+    </div>
+    <a href="{% url 'webapp:facture_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+{# ── Écart alert ── #}
+{% if facture.ecart_detected and facture.bon_commande %}
+<div class="alert alert-danger d-flex align-items-center mb-4">
+    <i class="bi bi-exclamation-triangle-fill fs-5 me-2 flex-shrink-0"></i>
+    <div>
+        <strong>Écart détecté :</strong>
+        BC = {{ facture.bon_commande.total_amount|floatformat:2 }} DH /
+        Facture TTC = {{ facture.montant_ttc|floatformat:2 }} DH
+    </div>
+</div>
+{% endif %}
+
+{# ── Header card ── #}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-2">
+                <div class="text-muted small">Statut</div>
+                {% if facture.statut == 'EN_ATTENTE' %}
+                <span class="badge bg-warning text-dark fs-6">{{ facture.get_statut_display }}</span>
+                {% elif facture.statut == 'VALIDEE' %}
+                <span class="badge bg-primary fs-6">{{ facture.get_statut_display }}</span>
+                {% elif facture.statut == 'PAYEE' %}
+                <span class="badge bg-success fs-6">{{ facture.get_statut_display }}</span>
+                {% else %}
+                <span class="badge bg-danger fs-6">{{ facture.get_statut_display }}</span>
+                {% endif %}
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small">Date facture</div>
+                <div class="fw-semibold">{{ facture.date_facture|date:"d/m/Y" }}</div>
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small">Échéance</div>
+                <div class="fw-semibold">{{ facture.date_echeance|date:"d/m/Y" }}</div>
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small">Montant HT</div>
+                <div class="fw-semibold">{{ facture.montant_ht|floatformat:2 }} DH</div>
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small">Montant TTC</div>
+                <div class="fw-bold fs-5">{{ facture.montant_ttc|floatformat:2 }} DH</div>
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small">Créée par</div>
+                <div>{{ facture.created_by.full_name }}</div>
+            </div>
+        </div>
+        {% if facture.commentaire %}
+        <hr class="my-3">
+        <div class="text-muted small">Commentaire</div>
+        <p class="mb-0">{{ facture.commentaire }}</p>
+        {% endif %}
+    </div>
+
+    {# ── Action buttons ── #}
+    {% if request.user.role == 'ADMIN' or request.user.role == 'ACHETEUR' %}
+    <div class="card-footer d-flex flex-wrap gap-2">
+        {% if facture.statut == 'EN_ATTENTE' %}
+        <form method="post" action="{% url 'webapp:facture_valider' facture.pk %}"
+              onsubmit="return confirm('Valider cette facture ?')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-primary">
+                <i class="bi bi-check-lg me-1"></i> Valider
+            </button>
+        </form>
+        {% endif %}
+        {% if facture.statut == 'VALIDEE' and request.user.role == 'ADMIN' %}
+        <form method="post" action="{% url 'webapp:facture_payer' facture.pk %}"
+              onsubmit="return confirm('Marquer comme payée ?')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-success">
+                <i class="bi bi-credit-card me-1"></i> Marquer comme payée
+            </button>
+        </form>
+        {% endif %}
+        {% if facture.statut != 'PAYEE' %}
+        <a href="{% url 'webapp:facture_rejeter' facture.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-x-circle me-1"></i> Rejeter
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{# ── 3-way matching card ── #}
+{% if facture.bon_commande %}
+<div class="card mb-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-arrow-left-right me-1"></i> Rapprochement à 3 voies
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th style="width:140px;"></th>
+                        <th><i class="bi bi-cart-check me-1"></i>Bon de commande</th>
+                        <th><i class="bi bi-box-arrow-in-down me-1"></i>Réception</th>
+                        <th><i class="bi bi-receipt me-1"></i>Facture</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-semibold text-muted small">Référence</td>
+                        <td class="text-center">{{ facture.bon_commande.code }}</td>
+                        <td class="text-center text-muted small">
+                            {% if receptions %}
+                            {{ receptions|length }} réception(s)
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">{{ facture.reference }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold text-muted small">Montant</td>
+                        <td class="text-center fw-semibold">{{ facture.bon_commande.total_amount|floatformat:2 }} DH</td>
+                        <td class="text-center fw-semibold">
+                            {% if reception_total %}
+                            {{ reception_total|floatformat:2 }} DH
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center fw-semibold {% if facture.ecart_detected %}text-danger{% endif %}">
+                            {{ facture.montant_ttc|floatformat:2 }} DH
+                            {% if facture.ecart_detected %}
+                            <i class="bi bi-exclamation-triangle-fill text-warning ms-1" title="Écart détecté"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold text-muted small">Statut</td>
+                        <td class="text-center">
+                            <span class="badge bg-{{ facture.bon_commande.status|status_badge }}">
+                                {{ facture.bon_commande.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if receptions %}
+                            <span class="badge bg-success">Réceptionnée</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Non réceptionnée</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if facture.statut == 'EN_ATTENTE' %}
+                            <span class="badge bg-warning text-dark">{{ facture.get_statut_display }}</span>
+                            {% elif facture.statut == 'VALIDEE' %}
+                            <span class="badge bg-primary">{{ facture.get_statut_display }}</span>
+                            {% elif facture.statut == 'PAYEE' %}
+                            <span class="badge bg-success">{{ facture.get_statut_display }}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ facture.get_statut_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Lignes de facture ── #}
+<div class="card mb-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-list-ul me-1"></i> Lignes de facture
+    </div>
+    <div class="card-body p-0">
+        {% if lignes %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Désignation</th>
+                        <th class="text-center">Qté</th>
+                        <th class="text-end">Prix unitaire</th>
+                        <th class="text-end">Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ligne in lignes %}
+                    <tr>
+                        <td>{{ ligne.designation }}</td>
+                        <td class="text-center">{{ ligne.quantite }}</td>
+                        <td class="text-end">{{ ligne.prix_unitaire|floatformat:2 }} DH</td>
+                        <td class="text-end fw-semibold">{{ ligne.montant_total|floatformat:2 }} DH</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="3" class="text-end fw-bold">Total TTC</td>
+                        <td class="text-end fw-bold">{{ facture.montant_ttc|floatformat:2 }} DH</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted small">Aucune ligne enregistrée.</div>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Réceptions liées ── #}
+{% if receptions %}
+<div class="card">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-box-arrow-in-down me-1"></i> Réceptions liées au BC
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Référence</th>
+                        <th>Date</th>
+                        <th>Réceptionneur</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in receptions %}
+                    <tr>
+                        <td class="fw-semibold">{{ rec.code }}</td>
+                        <td>{{ rec.received_at|date:"d/m/Y H:i" }}</td>
+                        <td>{{ rec.receiver_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

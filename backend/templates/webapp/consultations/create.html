@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Nouvelle consultation{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Nouvelle consultation</h1>
+    <a href="{% url 'webapp:consultation_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header fw-semibold">Informations générales</div>
+                <div class="card-body">
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header fw-semibold">
+                    Fournisseurs invités
+                    <span class="text-muted fw-normal small ms-1">(cochez au moins 1)</span>
+                </div>
+                <div class="card-body" style="max-height:400px;overflow-y:auto;">
+                    {% for f in fournisseurs %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox"
+                               name="fournisseurs" value="{{ f.pk }}"
+                               id="f{{ f.pk }}">
+                        <label class="form-check-label" for="f{{ f.pk }}">
+                            {{ f.name }}
+                            {% if f.email %}<span class="text-muted small ms-1">({{ f.email }})</span>{% endif %}
+                        </label>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted small">Aucun fournisseur actif disponible.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i> Créer la consultation
+        </button>
+        <a href="{% url 'webapp:consultation_list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+    </div>
+</form>
+{% endblock %}

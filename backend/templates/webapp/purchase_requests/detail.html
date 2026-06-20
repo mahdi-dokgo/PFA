@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load webapp_extras %}
+
+{% block title %}{{ purchase_request.code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ purchase_request.code }}</h1>
+        <span class="badge bg-{{ purchase_request.status|status_badge }}">{{ purchase_request.get_status_display }}</span>
+        <span class="badge bg-light text-dark border">Priorité : {{ purchase_request.get_priority_display }}</span>
+    </div>
+    <a href="{% url 'webapp:request_list' %}" class="btn btn-outline-secondary">Retour à la liste</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <p class="mb-1"><strong>Demandeur :</strong> {{ purchase_request.requester.full_name }}</p>
+        <p class="mb-1"><strong>Créée le :</strong> {{ purchase_request.created_at|date:"d/m/Y H:i" }}</p>
+        <p class="mb-1"><strong>Dernière mise à jour :</strong> {{ purchase_request.updated_at|date:"d/m/Y H:i" }}</p>
+        {% if purchase_request.comment %}
+            <p class="mb-1"><strong>Commentaire :</strong> {{ purchase_request.comment }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<h5>Lignes</h5>
+<div class="table-responsive mb-4">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Article</th>
+                <th>Quantité</th>
+                <th>Justification</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in purchase_request.lines.all %}
+            <tr>
+                <td>{{ line.article.reference }} – {{ line.article.name }}</td>
+                <td>{{ line.quantity }} {{ line.article.unit }}</td>
+                <td>{{ line.justification|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if purchase_request.status == 'BROUILLON' %}
+    {% if user.role == 'ADMIN' or user.role == 'DEMANDEUR' %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Action</h5>
+            <form method="post" action="{% url 'webapp:request_submit' purchase_request.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Soumettre pour validation</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+{% if purchase_request.status == 'SOUMISE' %}
+    {% if user.role == 'ADMIN' or user.role == 'VALIDATEUR' %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Décision</h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">{{ approval_form.comment.label }}</label>
+                    {{ approval_form.comment }}
+                </div>
+                <button type="submit" formaction="{% url 'webapp:request_approve' purchase_request.pk %}" class="btn btn-success">Valider</button>
+                <button type="submit" formaction="{% url 'webapp:request_reject' purchase_request.pk %}" class="btn btn-danger">Rejeter</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+{% if purchase_request.status == 'VALIDEE' %}
+    {% if user.role == 'ADMIN' or user.role == 'ACHETEUR' %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Action</h5>
+            <a href="{% url 'webapp:po_create' %}?from_request={{ purchase_request.pk }}" class="btn btn-primary">
+                Créer un bon de commande
+            </a>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+<h5>Historique</h5>
+<ul class="list-group">
+    {% for entry in purchase_request.audit.all|dictsortreversed:"at" %}
+    <li class="list-group-item">
+        <strong>{{ entry.action }}</strong> par {{ entry.actor_name }}
+        <span class="text-muted">— {{ entry.at|date:"d/m/Y H:i" }}</span>
+        {% if entry.comment %}<div class="text-muted small mt-1">{{ entry.comment }}</div>{% endif %}
+    </li>
+    {% empty %}
+    <li class="list-group-item text-muted">Aucun historique.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,565 @@
+/* =========================================================
+   ApprovWise — Design system (Bootstrap 5 override)
+   Palette : bleu pétrole / accent ciel, typographie Inter
+   ========================================================= */
+
+:root {
+  /* Palette de marque */
+  --bw-primary: #2F5AF6;
+  --bw-primary-dark: #0F172A;
+  --bw-primary-light: #6B86FF;
+  --bw-accent: #62B6CB;
+  --bw-bg: #F6F8FA;
+  --bw-surface: #FFFFFF;
+  --bw-ink: #1C2B33;
+  --bw-muted: #6B7B85;
+  --bw-border: #E2E8EE;
+
+  /* Variantes "emphasis" plus sombres pour le texte sur fond clair (contraste AA) */
+  --bw-warning-text: #B45309;
+  --bw-info-text: #0E7490;
+
+  /* Override des variables Bootstrap 5 */
+  --bs-primary: var(--bw-primary);
+  --bs-primary-rgb: 47, 90, 246;
+  --bs-link-color: var(--bw-primary);
+  --bs-link-hover-color: var(--bw-primary-light);
+  --bs-body-bg: var(--bw-bg);
+  --bs-body-color: var(--bw-ink);
+  --bs-border-color: var(--bw-border);
+  --bs-border-radius: 0.5rem;
+  --bs-border-radius-sm: 0.375rem;
+  --bs-border-radius-lg: 0.75rem;
+}
+
+/* ---------------------------------------------------------
+   Typographie
+   --------------------------------------------------------- */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  font-size: 0.9375rem;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--bw-primary-dark);
+}
+
+h1, .h1 { font-size: 1.65rem; }
+h2, .h2 { font-size: 1.35rem; }
+h3, .h3 { font-size: 1.15rem; }
+
+a {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------
+   Barre de navigation
+   --------------------------------------------------------- */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 240px;
+  right: 0;
+  z-index: 1030;
+  background: var(--bw-primary-dark);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  color: #fff !important;
+}
+
+.navbar .badge {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  padding: 0.35em 0.65em;
+}
+
+/* ---------------------------------------------------------
+   Sidebar
+   --------------------------------------------------------- */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 240px;
+  overflow-y: auto;
+  z-index: 1020;
+  background-color: var(--bw-primary-dark);
+  border-right: none;
+  padding: 1rem 0.75rem;
+}
+
+/* Main content offset — clears fixed sidebar + navbar */
+.app-body {
+  margin-left: 240px;
+  padding-top: 56px;
+}
+
+.sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #94A3B8;
+  font-weight: 500;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--bs-border-radius);
+  border-left: 3px solid transparent;
+  margin-bottom: 0.15rem;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.sidebar .nav-link.active {
+  background-color: rgba(47, 90, 246, 0.18);
+  color: #FFFFFF;
+  border-left-color: var(--bw-primary);
+  font-weight: 600;
+}
+
+.sidebar .nav-link i,
+.sidebar .nav-link svg {
+  font-size: 1.05rem;
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------
+   Cartes
+   --------------------------------------------------------- */
+.card {
+  border: 1px solid var(--bw-border);
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: 0 1px 2px rgba(16, 42, 67, 0.04);
+}
+
+/* Cartes KPI du tableau de bord */
+@keyframes kpi-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kpi-card {
+  background-color: var(--bw-surface);
+  border: 1px solid var(--bw-border);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 1.1rem 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  min-height: 110px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  animation: kpi-fade-in 0.45s ease-out both;
+}
+
+.kpi-card:nth-child(1)  { animation-delay: 0.00s; }
+.kpi-card:nth-child(2)  { animation-delay: 0.05s; }
+.kpi-card:nth-child(3)  { animation-delay: 0.10s; }
+.kpi-card:nth-child(4)  { animation-delay: 0.15s; }
+.kpi-card:nth-child(5)  { animation-delay: 0.20s; }
+.kpi-card:nth-child(6)  { animation-delay: 0.25s; }
+.kpi-card:nth-child(7)  { animation-delay: 0.30s; }
+.kpi-card:nth-child(8)  { animation-delay: 0.35s; }
+.kpi-card:nth-child(9)  { animation-delay: 0.40s; }
+.kpi-card:nth-child(10) { animation-delay: 0.45s; }
+.kpi-card:nth-child(11) { animation-delay: 0.50s; }
+.kpi-card:nth-child(12) { animation-delay: 0.55s; }
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 42, 67, 0.08);
+  border-color: var(--bw-primary-light);
+  text-decoration: none;
+}
+
+/* Dégradés/teintes par statut */
+.kpi-card.border-success { background: linear-gradient(160deg, #FFFFFF 55%, rgba(46, 125, 50, 0.05) 100%); }
+.kpi-card.border-warning { background: linear-gradient(160deg, #FFFFFF 55%, rgba(180, 83, 9, 0.05) 100%); }
+.kpi-card.border-danger  { background: linear-gradient(160deg, #FFFFFF 55%, rgba(198, 40, 40, 0.05) 100%); }
+.kpi-card.border-info    { background: linear-gradient(160deg, #FFFFFF 55%, rgba(14, 116, 144, 0.05) 100%); }
+.kpi-card.border-primary { background: linear-gradient(160deg, #FFFFFF 55%, rgba(47, 90, 246, 0.05) 100%); }
+.kpi-card.border-secondary { background: linear-gradient(160deg, #FFFFFF 55%, rgba(107, 123, 133, 0.05) 100%); }
+
+.kpi-icon-circle {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  margin-bottom: 0.6rem;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.kpi-card:hover .kpi-icon-circle {
+  transform: scale(1.12) rotate(-4deg);
+  box-shadow: 0 4px 10px rgba(16, 42, 67, 0.10);
+}
+
+.kpi-value {
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.2s ease;
+}
+
+.kpi-label {
+  color: var(--bw-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 0.15rem;
+}
+
+/* Contraste renforcé pour les chiffres KPI (les badges de statut ailleurs
+   restent inchangés) */
+.kpi-value.text-warning {
+  color: var(--bw-warning-text) !important;
+}
+
+.kpi-value.text-info {
+  color: var(--bw-info-text) !important;
+}
+
+/* Accessibilité : désactive l'animation d'entrée si demandé */
+@media (prefers-reduced-motion: reduce) {
+  .kpi-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------
+   Tableaux
+   --------------------------------------------------------- */
+.table {
+  --bs-table-bg: var(--bw-surface);
+}
+
+.table thead th {
+  background-color: var(--bw-bg);
+  color: var(--bw-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--bw-border);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: rgba(246, 248, 250, 0.6);
+}
+
+.table-hover > tbody > tr:hover > * {
+  --bs-table-accent-bg: rgba(95, 168, 211, 0.08);
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
+
+/* Surlignage articles sous le seuil (réutilisé étapes 4/7) */
+.table-danger {
+  --bs-table-bg: rgba(217, 83, 79, 0.08) !important;
+}
+
+/* ---------------------------------------------------------
+   Badges de statut
+   --------------------------------------------------------- */
+.badge {
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.4em 0.7em;
+  border-radius: 0.4rem;
+}
+
+/* ---------------------------------------------------------
+   Boutons
+   --------------------------------------------------------- */
+.btn {
+  font-weight: 600;
+  border-radius: var(--bs-border-radius);
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+
+.btn-primary {
+  background-color: var(--bw-primary);
+  border-color: var(--bw-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--bw-primary-dark);
+  border-color: var(--bw-primary-dark);
+}
+
+.btn-outline-primary {
+  color: var(--bw-primary);
+  border-color: var(--bw-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--bw-primary);
+  border-color: var(--bw-primary);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* ---------------------------------------------------------
+   Formulaires
+   --------------------------------------------------------- */
+.form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--bw-ink);
+  margin-bottom: 0.35rem;
+}
+
+.form-control,
+.form-select {
+  border-color: var(--bw-border);
+  border-radius: var(--bs-border-radius-sm);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--bw-primary);
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
+}
+
+/* ---------------------------------------------------------
+   Alertes / messages
+   --------------------------------------------------------- */
+.alert {
+  border: none;
+  border-radius: var(--bs-border-radius);
+  border-left: 4px solid transparent;
+}
+
+.alert-success { border-left-color: #2E7D32; }
+.alert-danger  { border-left-color: #C62828; }
+.alert-warning { border-left-color: #E0A800; }
+.alert-info    { border-left-color: var(--bw-accent); }
+
+/* ---------------------------------------------------------
+   Pagination
+   --------------------------------------------------------- */
+.pagination .page-link {
+  color: var(--bw-primary);
+  border-color: var(--bw-border);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--bw-primary);
+  border-color: var(--bw-primary);
+}
+
+/* ---------------------------------------------------------
+   Focus visible (accessibilité)
+   --------------------------------------------------------- */
+a:focus-visible,
+button:focus-visible,
+.nav-link:focus-visible {
+  outline: 2px solid var(--bw-primary);
+  outline-offset: 2px;
+}
+
+/* Respect des préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* =========================================================
+   ApprovWise — Raffinements vol. 2
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   Icônes en cercle coloré (cartes KPI) — teintes
+   --------------------------------------------------------- */
+.kpi-icon-circle.bg-soft-primary { background-color: rgba(47, 90, 246, 0.12); color: var(--bw-primary); }
+.kpi-icon-circle.bg-soft-success { background-color: rgba(46, 125, 50, 0.12); color: #2E7D32; }
+.kpi-icon-circle.bg-soft-warning { background-color: rgba(180, 83, 9, 0.12); color: var(--bw-warning-text); }
+.kpi-icon-circle.bg-soft-danger  { background-color: rgba(198, 40, 40, 0.12); color: #C62828; }
+.kpi-icon-circle.bg-soft-info    { background-color: rgba(14, 116, 144, 0.12); color: var(--bw-info-text); }
+.kpi-icon-circle.bg-soft-secondary { background-color: rgba(107, 123, 133, 0.12); color: var(--bw-muted); }
+
+/* ---------------------------------------------------------
+   Sidebar : titres de section
+   --------------------------------------------------------- */
+.sidebar .sidebar-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94A3B8 !important;
+  padding: 0.5rem 0.85rem 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.sidebar-section-title:first-child {
+  margin-top: 0;
+}
+
+/* ---------------------------------------------------------
+   Sidebar : carte utilisateur en bas
+   --------------------------------------------------------- */
+.sidebar-user-card {
+  margin-top: auto;
+  padding: 0.75rem 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.sidebar-user-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background-color: rgba(47, 90, 246, 0.25);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.sidebar-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar .sidebar-user-name {
+  color: #FFFFFF !important;
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar .sidebar-user-role {
+  color: #94A3B8 !important;
+  font-size: 0.75rem;
+}
+
+.sidebar-user-card .btn-logout {
+  color: #94A3B8;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.sidebar-user-card .btn-logout:hover {
+  color: #FFFFFF;
+}
+
+/* Permet à .sidebar-user-card de se coller en bas si la sidebar
+   est en display:flex / flex-direction:column */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-nav {
+  flex: 1;
+}
+
+/* ---------------------------------------------------------
+   Panneau "Alertes & actions"
+   --------------------------------------------------------- */
+.alert-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--bw-border);
+  text-decoration: none;
+  color: inherit;
+}
+
+.alert-list-item:last-child {
+  border-bottom: none;
+}
+
+.alert-list-item:hover {
+  text-decoration: none;
+}
+
+.alert-list-item:hover .alert-list-title {
+  color: var(--bw-primary);
+}
+
+.alert-list-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.6rem;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.alert-list-icon.bg-soft-danger  { background-color: rgba(198, 40, 40, 0.12); color: #C62828; }
+.alert-list-icon.bg-soft-warning { background-color: rgba(180, 83, 9, 0.12); color: var(--bw-warning-text); }
+.alert-list-icon.bg-soft-info    { background-color: rgba(14, 116, 144, 0.12); color: var(--bw-info-text); }
+.alert-list-icon.bg-soft-primary { background-color: rgba(47, 90, 246, 0.12); color: var(--bw-primary); }
+
+.alert-list-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--bw-ink);
+  transition: color 0.15s ease;
+}
+
+.alert-list-subtitle {
+  font-size: 0.825rem;
+  color: var(--bw-muted);
+}
+
+.alert-list-empty {
+  color: var(--bw-muted);
+  font-size: 0.9rem;
+  padding: 1rem 0;
+  text-align: center;
+}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Stock{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Stock</h1>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link active" href="{% url 'webapp:stock_overview' %}">Vue d'ensemble</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'webapp:stock_movements' %}">Mouvements</a>
+    </li>
+</ul>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        {% if alert_only %}
+            <a href="{% url 'webapp:stock_overview' %}" class="btn btn-outline-secondary btn-sm">
+                Voir tous les articles
+            </a>
+        {% else %}
+            <a href="?alert=1" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-exclamation-triangle"></i> Articles sous le seuil minimal ({{ alert_count }})
+            </a>
+        {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        {% if user.role == 'ADMIN' or user.role == 'ACHETEUR' or user.role == 'DIRECTION' %}
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'webapp:export_stock_excel' %}">
+                    <i class="bi bi-file-earmark-excel text-success me-2"></i>Excel (.xlsx)
+                </a></li>
+            </ul>
+        </div>
+        {% endif %}
+        {% if user.role == 'ADMIN' or user.role == 'MAGASINIER' %}
+        <a href="{% url 'webapp:stock_adjustment_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Nouvel ajustement
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Référence</th>
+                <th>Nom</th>
+                <th>Catégorie</th>
+                <th>Stock actuel</th>
+                <th>Seuil min.</th>
+                <th>Stock sécurité</th>
+                <th>Statut</th>
+                {% if user.role == 'ADMIN' or user.role == 'MAGASINIER' %}<th></th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in articles %}
+            <tr {% if article.current_stock <= article.min_threshold %}class="table-danger"{% elif article.current_stock < article.safety_stock %}class="table-warning"{% endif %}>
+                <td>{{ article.reference }}</td>
+                <td>{{ article.name }}</td>
+                <td>{{ article.category.name|default:"—" }}</td>
+                <td>{{ article.current_stock }}</td>
+                <td>{{ article.min_threshold }}</td>
+                <td>{{ article.safety_stock }}</td>
+                <td>
+                    {% if article.current_stock <= article.min_threshold %}
+                        <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Critique</span>
+                    {% elif article.current_stock < article.safety_stock %}
+                        <span class="badge bg-warning text-dark">À surveiller</span>
+                    {% else %}
+                        <span class="badge bg-success">OK</span>
+                    {% endif %}
+                </td>
+                {% if user.role == 'ADMIN' or user.role == 'MAGASINIER' %}
+                <td class="text-end">
+                    <a href="{% url 'webapp:stock_adjustment_create' %}?article={{ article.pk }}" class="btn btn-sm btn-outline-primary">Ajuster</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center text-muted py-4">Aucun article trouvé.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% include "webapp/_pagination.html" %}
+{% endblock %}

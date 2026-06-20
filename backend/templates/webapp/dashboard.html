@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% load webapp_extras %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">Tableau de bord</h1>
+<p class="lead">
+    Bienvenue, {{ user.full_name }}
+    <span class="badge bg-secondary">{{ user.get_role_display }}</span>
+</p>
+
+{# ===== Summary KPI bar (role-specific) ===== #}
+<div class="mb-4" style="background:#f8fafc;border-radius:12px;padding:20px;">
+  <div class="row g-3">
+    {% for kpi in summary_kpis %}
+    <div class="col-6 col-md-3">
+      <div style="background:#fff;border-radius:12px;padding:20px 24px;border-left:4px solid {{ kpi.color }};height:100%;">
+        <div style="font-size:13px;color:#6b7280;text-transform:uppercase;font-weight:600;letter-spacing:0.05em;margin-bottom:8px;">
+          <i class="bi {{ kpi.icon }} me-1" style="color:{{ kpi.color }};"></i> {{ kpi.label }}
+        </div>
+        <div {% if kpi.animate %}class="kpi-value" {% endif %}style="font-size:{{ kpi.font_size }}px;font-weight:700;color:#111827;">{{ kpi.value }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if request_status_counts %}
+<h5 class="mt-4">
+    {% if user_role == 'DEMANDEUR' %}Mes demandes d'achat{% else %}Demandes d'achat{% endif %}
+</h5>
+<div class="row g-3 mb-4">
+    {% for item in request_status_counts %}
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% url 'webapp:request_list' %}?status={{ item.status }}" class="kpi-card border-{{ item.status|status_badge }}">
+            <div class="kpi-icon-circle bg-soft-{{ item.status|status_badge }}">
+                <i class="bi {{ item.status|status_icon }}"></i>
+            </div>
+            <div class="kpi-value text-{{ item.status|status_badge }}">{{ item.count }}</div>
+            <div class="kpi-label">{{ item.label }}</div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if po_status_counts %}
+<h5 class="mt-4">Bons de commande</h5>
+<div class="row g-3 mb-4">
+    {% for item in po_status_counts %}
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% url 'webapp:po_list' %}?status={{ item.status }}" class="kpi-card border-{{ item.status|status_badge }}">
+            <div class="kpi-icon-circle bg-soft-{{ item.status|status_badge }}">
+                <i class="bi {{ item.status|status_icon }}"></i>
+            </div>
+            <div class="kpi-value text-{{ item.status|status_badge }}">{{ item.count }}</div>
+            <div class="kpi-label">{{ item.label }}</div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if pending_validation_count is not None %}
+<h5 class="mt-4">Validation</h5>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-3">
+        <a href="{% url 'webapp:request_list' %}?status=SOUMISE" class="kpi-card border-warning">
+            <div class="kpi-icon-circle bg-soft-warning">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div class="kpi-value text-warning">{{ pending_validation_count }}</div>
+            <div class="kpi-label">Demandes en attente de validation</div>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% if validated_requests_count is not None %}
+<h5 class="mt-4">Demandes d'achat</h5>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-3">
+        <a href="{% url 'webapp:request_list' %}?status=VALIDEE" class="kpi-card border-success">
+            <div class="kpi-icon-circle bg-soft-success">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="kpi-value text-success">{{ validated_requests_count }}</div>
+            <div class="kpi-label">Demandes validées à convertir en BC</div>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% if stock_alert_count is not None %}
+<h5 class="mt-4">Stock</h5>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-3">
+        <a href="{% url 'webapp:stock_overview' %}?alert=1" class="kpi-card border-danger">
+            <div class="kpi-icon-circle bg-soft-danger">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="kpi-value text-danger">{{ stock_alert_count }}</div>
+            <div class="kpi-label">Articles sous le seuil minimal</div>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% if receivable_po_count is not None %}
+<h5 class="mt-4">Réceptions</h5>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-3">
+        <a href="{% url 'webapp:reception_create' %}" class="kpi-card border-primary">
+            <div class="kpi-icon-circle bg-soft-primary">
+                <i class="bi bi-truck"></i>
+            </div>
+            <div class="kpi-value text-primary">{{ receivable_po_count }}</div>
+            <div class="kpi-label">Bons de commande en attente de réception</div>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{# ===== Charts (role-conditional) ===== #}
+{% if show_donut_chart or show_bar_chart %}
+<div class="row g-3 mb-4 align-items-stretch">
+  {% if show_donut_chart %}
+  {{ request_chart_data|json_script:"req-chart-data" }}
+  <div class="col-md-6">
+    <div class="card" style="height:100%;display:flex;flex-direction:column;">
+      <div class="card-body" style="display:flex;flex-direction:column;">
+        <h6 class="mb-3" style="font-weight:600;color:#111827;">{{ donut_chart_title }}</h6>
+        <div style="position:relative;height:320px;flex:1;">
+          <canvas id="reqStatusChart" style="max-height:280px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% if show_bar_chart %}
+  {{ supplier_chart_data|json_script:"sup-chart-data" }}
+  <div class="col-md-6">
+    <div class="card" style="height:100%;display:flex;flex-direction:column;">
+      <div class="card-body" style="display:flex;flex-direction:column;">
+        <h6 class="mb-3" style="font-weight:600;color:#111827;">Top 5 fournisseurs par dépenses (DH)</h6>
+        <div style="position:relative;height:320px;flex:1;">
+          <canvas id="supplierChart" style="max-height:280px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ===== Top articles chart ===== #}
+{% if show_articles_chart %}
+{{ top_articles_data|json_script:"articles-chart-data" }}
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="mb-3" style="font-weight:600;color:#111827;">
+          <i class="bi bi-bar-chart-line me-1 text-primary"></i>
+          Top 5 articles les plus demandés
+        </h6>
+        <div style="position:relative;height:220px;">
+          <canvas id="topArticlesChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ===== Recent activity ===== #}
+<div class="mb-4">
+  <div class="card">
+    <div class="card-body">
+      <h5 class="mb-3">Activité récente</h5>
+      {% if recent_activities %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="font-size:12px;text-transform:uppercase;color:#6b7280;font-weight:600;">Date</th>
+              <th style="font-size:12px;text-transform:uppercase;color:#6b7280;font-weight:600;">Utilisateur</th>
+              <th style="font-size:12px;text-transform:uppercase;color:#6b7280;font-weight:600;">Action</th>
+              <th style="font-size:12px;text-transform:uppercase;color:#6b7280;font-weight:600;">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for act in recent_activities %}
+            <tr>
+              <td style="font-size:13px;white-space:nowrap;color:#6b7280;">{{ act.date|date:"d/m/Y H:i" }}</td>
+              <td style="font-size:13px;">{{ act.user }}</td>
+              <td style="font-size:13px;">{{ act.action }}</td>
+              <td><span class="badge text-bg-{{ act.badge_color }}" style="font-size:11px;">{{ act.badge }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">Aucune activité récente.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="mb-3">Alertes &amp; actions</h5>
+                {% for alert in alerts %}
+                <a href="{{ alert.url }}" class="alert-list-item">
+                    <div class="alert-list-icon bg-soft-{{ alert.color }}">
+                        <i class="bi {{ alert.icon }}"></i>
+                    </div>
+                    <div>
+                        <div class="alert-list-title">{{ alert.title }}</div>
+                        <div class="alert-list-subtitle">{{ alert.subtitle }}</div>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="alert-list-empty">Aucune alerte pour le moment</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if show_donut_chart or show_bar_chart or show_articles_chart %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  {% if show_donut_chart %}
+  (function () {
+    const d = JSON.parse(document.getElementById('req-chart-data').textContent);
+    new Chart(document.getElementById('reqStatusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: d.labels,
+        datasets: [{ data: d.data, backgroundColor: d.colors, borderWidth: 2, borderColor: '#ffffff' }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 16, font: { size: 12 } } } },
+        cutout: '60%',
+      }
+    });
+  })();
+  {% endif %}
+  {% if show_bar_chart %}
+  (function () {
+    const d = JSON.parse(document.getElementById('sup-chart-data').textContent);
+    new Chart(document.getElementById('supplierChart'), {
+      type: 'bar',
+      data: {
+        labels: d.labels,
+        datasets: [{ label: 'Dépenses (DH)', data: d.data, backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 40 }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, min: 0, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#f3f4f6' } }
+        }
+      }
+    });
+  })();
+  {% endif %}
+  {% if show_articles_chart %}
+  (function () {
+    const d = JSON.parse(document.getElementById('articles-chart-data').textContent);
+    new Chart(document.getElementById('topArticlesChart'), {
+      type: 'bar',
+      data: {
+        labels: d.labels,
+        datasets: [{
+          label: 'Quantité totale demandée',
+          data: d.data,
+          backgroundColor: ['#3b82f6','#22c55e','#f59e0b','#14b8a6','#a855f7'],
+          borderRadius: 4,
+          barThickness: 32,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#f3f4f6' } },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+  })();
+  {% endif %}
+</script>
+{% endif %}
+{% endblock %}

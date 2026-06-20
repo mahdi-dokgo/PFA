@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load webapp_extras %}
+
+{% block title %}Bons de commande{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Bons de commande</h1>
+    <div class="d-flex gap-2">
+        {% if user.role == 'ADMIN' or user.role == 'ACHETEUR' or user.role == 'DIRECTION' %}
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'webapp:export_bc_excel' %}">
+                    <i class="bi bi-file-earmark-excel text-success me-2"></i>Excel (.xlsx)
+                </a></li>
+                <li><a class="dropdown-item" href="{% url 'webapp:export_bc_pdf' %}">
+                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF
+                </a></li>
+            </ul>
+        </div>
+        {% endif %}
+        {% if user.role == 'ADMIN' or user.role == 'ACHETEUR' %}
+        <a href="{% url 'webapp:po_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Nouveau bon de commande
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Rechercher par code">
+    </div>
+    <div class="col-auto">
+        <select name="status" class="form-select">
+            <option value="">Tous les statuts</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if value == current_status %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Filtrer</button>
+    </div>
+    {% if current_status or search %}
+    <div class="col-auto">
+        <a href="{% url 'webapp:po_list' %}" class="btn btn-link">Réinitialiser</a>
+    </div>
+    {% endif %}
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Fournisseur</th>
+                <th>Demande liée</th>
+                <th>Statut</th>
+                <th>Livraison prévue</th>
+                <th>Montant total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.code }}</td>
+                <td>{{ order.supplier.name }}</td>
+                <td>{{ order.request.code|default:"—" }}</td>
+                <td><span class="badge bg-{{ order.status|status_badge }}">{{ order.get_status_display }}</span></td>
+                <td>{{ order.expected_date|date:"d/m/Y" }}</td>
+                <td>{{ order.total_amount }}</td>
+                <td class="text-end">
+                    <a href="{% url 'webapp:po_detail' order.pk %}" class="btn btn-sm btn-outline-primary">Voir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">Aucun bon de commande trouvé.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% include "webapp/_pagination.html" %}
+{% endblock %}
