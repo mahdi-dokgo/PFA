@@ -89,6 +89,25 @@ def on_da_save(sender, instance, **kwargs):
         )
 
     elif instance.status in ('VALIDEE', 'REJETEE'):
+        # Notify the requester of the outcome
+        if instance.requester and instance.requester.is_active:
+            from .models import Notification
+            if instance.status == 'VALIDEE':
+                Notification.create(
+                    user=instance.requester,
+                    type=Notification.Type.INFO,
+                    titre=f"Votre DA {instance.code} a été validée",
+                    message="Votre demande d'achat a été approuvée et peut être convertie en bon de commande.",
+                    url=f'/demandes/{instance.pk}/',
+                )
+            else:
+                Notification.create(
+                    user=instance.requester,
+                    type=Notification.Type.INFO,
+                    titre=f"Votre DA {instance.code} a été rejetée",
+                    message="Votre demande d'achat a été rejetée. Consultez le détail pour voir le commentaire.",
+                    url=f'/demandes/{instance.pk}/',
+                )
         # DA processed — resolve its pending validation notification
         _resolve_notifications('DA_EN_ATTENTE', instance.code)
 

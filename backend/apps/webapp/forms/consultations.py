@@ -33,14 +33,18 @@ class ConsultationForm(forms.ModelForm):
 class PropositionForm(forms.ModelForm):
     class Meta:
         model = Proposition
-        fields = ['prix_unitaire', 'delai_livraison', 'commentaire']
+        fields = ['prix_unitaire', 'delai_livraison', 'qualite_estimee', 'disponibilite', 'commentaire']
         widgets = {
             'prix_unitaire':   forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
             'delai_livraison': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'qualite_estimee': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '5'}),
+            'disponibilite':   forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'commentaire':     forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
         labels = {
             'prix_unitaire':   'Prix unitaire (DH)',
             'delai_livraison': 'Délai de livraison (jours)',
+            'qualite_estimee': 'Qualité estimée (1 à 5)',
+            'disponibilite':   'Disponibilité immédiate',
             'commentaire':     'Commentaire',
         }

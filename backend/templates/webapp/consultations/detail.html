@@ -162,6 +162,8 @@
                         <th>Fournisseur</th>
                         <th class="text-end">Prix unitaire</th>
                         <th class="text-center">Délai (j)</th>
+                        <th class="text-center">Qualité</th>
+                        <th class="text-center">Dispo</th>
                         <th>Commentaire</th>
                         {% if request.user.role == 'ADMIN' or request.user.role == 'ACHETEUR' %}
                         {% if consultation.statut == 'OUVERTE' %}
@@ -185,6 +187,14 @@
                             {{ p.prix_unitaire|floatformat:2 }} DH
                         </td>
                         <td class="text-center">{{ p.delai_livraison }} j</td>
+                        <td class="text-center">{{ p.qualite_estimee }}/5</td>
+                        <td class="text-center">
+                            {% if p.disponibilite %}
+                            <span class="badge bg-success">Oui</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Non</span>
+                            {% endif %}
+                        </td>
                         <td class="text-muted small">{{ p.commentaire|truncatechars:80 }}</td>
                         {% if request.user.role == 'ADMIN' or request.user.role == 'ACHETEUR' %}
                         {% if consultation.statut == 'OUVERTE' %}

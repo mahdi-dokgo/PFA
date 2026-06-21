@@ -81,6 +81,14 @@ class Proposition(models.Model):
     )
     prix_unitaire    = models.DecimalField(max_digits=14, decimal_places=2)
     delai_livraison  = models.PositiveIntegerField(help_text='Délai en jours')
+    qualite_estimee  = models.PositiveSmallIntegerField(
+        default=3,
+        help_text='Note de qualité estimée de 1 (faible) à 5 (excellente)',
+    )
+    disponibilite    = models.BooleanField(
+        default=True,
+        help_text='Article disponible immédiatement selon le fournisseur',
+    )
     commentaire      = models.TextField(blank=True)
     date_reception   = models.DateTimeField(auto_now_add=True)
     retenue          = models.BooleanField(default=False)
