@@ -94,10 +94,7 @@
             {{ user.full_name }}
             <span class="badge bg-secondary">{{ user.get_role_display }}</span>
         </span>
-        <form method="post" action="{% url 'webapp:logout' %}" class="m-0">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-light btn-sm">Déconnexion</button>
-        </form>
+        
     </div>
 </nav>
 
