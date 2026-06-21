@@ -114,3 +114,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'webapp:login'
 LOGIN_REDIRECT_URL = 'webapp:dashboard'
 LOGOUT_REDIRECT_URL = 'webapp:login'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@approvwise.ma'
+
+from django.contrib.messages import constants as message_constants
+
+MESSAGE_TAGS = {
+    message_constants.ERROR: 'danger',
+}

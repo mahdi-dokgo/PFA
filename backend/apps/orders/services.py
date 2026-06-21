@@ -32,6 +32,13 @@ def create_purchase_order_with_lines(*, supplier, expected_date, total_amount, l
 
 
 def transition_purchase_order(purchase_order, new_status):
+    if new_status == PurchaseOrder.Status.CLOTUREE:
+        from django.db.models import F
+        if purchase_order.lines.filter(received_quantity__lt=F('quantity')).exists():
+            raise ValidationError(
+                "Ce bon de commande ne peut pas être clôturé : "
+                "toutes ses lignes doivent être entièrement réceptionnées."
+            )
     purchase_order.status = new_status
     purchase_order.save()
     return purchase_order

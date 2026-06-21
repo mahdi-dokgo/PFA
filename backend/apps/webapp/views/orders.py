@@ -139,9 +139,12 @@ class PurchaseOrderTransitionView(RoleRequiredMixin, View):
         po = get_object_or_404(PurchaseOrder, pk=pk)
         form = POStatusTransitionForm(request.POST)
         if form.is_valid():
-            services.transition_purchase_order(po, form.cleaned_data['status'])
-            log_action('BC', po.code, f"Transition → {po.get_status_display()}", user=request.user)
-            messages.success(request, f"Statut du bon {po.code} mis à jour : {po.get_status_display()}.")
+            try:
+                services.transition_purchase_order(po, form.cleaned_data['status'])
+                log_action('BC', po.code, f"Transition → {po.get_status_display()}", user=request.user)
+                messages.success(request, f"Statut du bon {po.code} mis à jour : {po.get_status_display()}.")
+            except DjangoValidationError as exc:
+                messages.error(request, exc.message)
         else:
             messages.error(request, "Statut invalide.")
         return redirect('webapp:po_detail', pk=po.pk)
