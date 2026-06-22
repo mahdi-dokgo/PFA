@@ -25,7 +25,7 @@ class ConsultationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['demande_achat'].required = False
         self.fields['demande_achat'].queryset = (
-            PurchaseRequest.objects.filter(status='CONVERTIE').order_by('-created_at')
+            PurchaseRequest.objects.filter(status='VALIDEE').order_by('-created_at')
         )
         self.fields['demande_achat'].empty_label = '— Aucune —'
 
