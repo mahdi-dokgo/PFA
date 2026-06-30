@@ -21,7 +21,11 @@
 <body>
 {% if user.is_authenticated %}
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg px-3">
-    <a class="navbar-brand" href="{% url 'webapp:dashboard' %}">ApprovWise</a>
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'webapp:dashboard' %}">
+        <img src="{% static 'webapp/images/logo.png' %}" alt="ApprovWise" height="36"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+        <span style="display:none">ApprovWise</span>
+    </a>
     <div class="ms-auto d-flex align-items-center text-white gap-2">
 
         {# ── Notification bell ── #}
