@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 44" width="270" height="44">
+  <rect x="2" y="2" width="40" height="40" rx="9" fill="#3B82F6"></rect>
+  <rect x="12" y="9" width="16" height="23" rx="2.2" fill="none" stroke="#FFFFFF" stroke-width="2.2"></rect>
+  <line x1="15.5" y1="15.5" x2="22.5" y2="15.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"></line>
+  <line x1="15.5" y1="20" x2="20.5" y2="20" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"></line>
+  <circle cx="29" cy="29" r="8.5" fill="#10B981"></circle>
+  <polyline points="25.4,29 27.8,31.4 32.7,25.8" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+  <text x="56" y="24" dominant-baseline="central" font-family="Poppins, &#39;Segoe UI&#39;, Helvetica, Arial, sans-serif" font-weight="600" font-size="32" letter-spacing="-0.5">
+    <tspan fill="#FFFFFF">Approv</tspan><tspan fill="#10B981">Wise</tspan>
+  </text>
+</svg>
